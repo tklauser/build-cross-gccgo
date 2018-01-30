@@ -363,11 +363,8 @@ test_compile() {
 	}
 	EOF
 
-	# TODO enable when mgo is built
-	#PATH="$TOOLS/bin:$PATH" go build -compiler gccgo ./hellogo.go
-	#log "RUN MANUALLY: Produced test-binary at: $test_path/hellogo"
-	PATH="$TOOLS/bin:$PATH" $TARGET-gccgo -Wall -Werror -static -o hellogo-static ./hello.go
-	log "RUN MANUALLY: Produced statically linked test-binary at: $test_path/hellogo-static"
+#	PATH="$TOOLS/bin:$PATH" $TARGET-gccgo -Wall -Werror -static -o hellogo-static ./hello.go
+#	log "RUN MANUALLY: Produced statically linked test-binary at: $test_path/hellogo-static"
 
 	PATH="$TOOLS/bin:$PATH" $TARGET-gccgo -Wall -Werror -o hellogo-dynamic ./hello.go
 	log "RUN MANUALLY: Produced dynamically linked test-binary at: $test_path/hellogo-dynamic"
