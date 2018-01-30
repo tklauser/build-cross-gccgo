@@ -168,7 +168,7 @@ build_gcc1() {
 		--enable-languages=c \
 		--without-headers \
 		--with-newlib \
-		--with-pkgversion="${USER}'s $TARGET GCC stage1 cross-compiler" \
+		--with-pkgversion="$TARGET GCC stage1 cross-compiler built by $scriptname" \
 		--disable-libgcc \
 		--disable-shared \
 		--disable-threads \
@@ -249,7 +249,7 @@ build_gcc2() {
 		--build=$BUILD \
 		--host=$HOST \
 		--with-sysroot=$SYSROOT \
-		--with-pkgversion="${USER}'s $TARGET GCC stage2 cross-compiler" \
+		--with-pkgversion="$TARGET GCC stage2 cross-compiler built by $scriptname" \
 		--enable-languages=c \
 		--disable-libssp \
 		--disable-libgomp \
@@ -315,7 +315,7 @@ build_gcc3() {
 		--disable-libmudflap \
 		--disable-libquadmath \
 		--disable-libquadmath-support \
-		--with-pkgversion="${USER}'s $TARGET GCC stage3 cross-compiler" \
+		--with-pkgversion="$TARGET GCC stage3 cross-compiler built by $scriptname" \
 		--with-ppl=no \
 		--with-isl=no \
 		--with-cloog=no \
