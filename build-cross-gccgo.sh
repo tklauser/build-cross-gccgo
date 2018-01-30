@@ -323,12 +323,6 @@ build_gcc3() {
 
 	PATH="$TOOLS/bin:$PATH" make -j $JOBS
 	PATH="$TOOLS/bin:$PATH" make install
-
-	cd $TOOLS/bin
-	for file in $(find . -type f) ; do
-		tool_name=$(echo $file | sed -e "s/${TARGET}-\(.*\)$/\1/")
-		ln -sf "$file" "$tool_name"
-	done
 }
 
 test_compile() {
