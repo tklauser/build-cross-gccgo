@@ -77,7 +77,7 @@ clean() {
 }
 
 fetch_sources() {
-        log "Setting up work directories and cloning sources"
+        log "Setting up work directories and fetching sources"
 
         cd $SRC
 
@@ -93,6 +93,9 @@ fetch_sources() {
                 git clone https://github.com/gcc-mirror/gcc.git
 	else
 		cd gcc
+		# drop previously linked gofrontend, it will be linked again
+		# below
+		git checkout -f
 		git pull
 		cd $SRC
 	fi
@@ -191,7 +194,7 @@ build_linux_headers() {
 		INSTALL_HDR_PATH=$SYSROOT/usr
 }
 
-build_glibc_boostrap() {
+build_glibc_bootstrap() {
 	log "Installing header files and bootstraping glibc"
 
 	setup_and_enter_dir "$OBJ/glibc-headers"
