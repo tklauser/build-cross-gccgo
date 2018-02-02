@@ -93,9 +93,9 @@ fetch_sources() {
                 git clone https://github.com/gcc-mirror/gcc.git
 	else
 		cd gcc
-		# drop previously linked gofrontend, it will be linked again
-		# below
-		git checkout -f
+		# drop previously linked gofrontend, it will be linked again below
+		rm -rf gcc/go/gofrontend
+		rm -rf libgo
 		git pull
 		cd $SRC
 	fi
