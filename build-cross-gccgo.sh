@@ -9,37 +9,62 @@
 
 set -e
 
-# Cross variables.
+scriptname=${0##*/}
+
+usage() {
+	echo "usage: ${scriptname} ARCH..."
+	echo "Currently supported ARCH values: arm, nios2, riscv64"
+}
+
+if [ "$#" -eq 0 ] ; then
+	usage
+	exit 1
+fi
+
+ARCH=$1
+
+case "$ARCH" in
+arm)
+	TARGET="${ARCH}-linux-gnueabihf"
+	LINUX_ARCH="$ARCH"
+	;;
+nios2)
+	TARGET="${ARCH}-linux-gnu"
+	LINUX_ARCH="$ARCH"
+	;;
+riscv64)
+	TARGET="riscv64-linux-gnu"
+	LINUX_ARCH="riscv"
+	;;
+*)
+	echo "unsupported ARCH value: $ARCH"
+	usage
+	exit 1
+	;;
+esac
+
 HOST="amd64-linux-gnu"
 BUILD="$HOST"
-TARGET="nios2-linux-gnu"
-LINUX_ARCH="nios2"
 LINUX_VERSION="4.15"
 
 # Work directories
 WORK="/scratch/cross-gccgo"
 SRC="$WORK/src"
-OBJ="$WORK/obj"
+OBJ="$WORK/obj/$TARGET"
+SYSROOT="$WORK/sysroot/$TARGET"
 TOOLS="$WORK/tools"
-SYSROOT="$WORK/sysroot"
 
 JOBS=4
 
-scriptname=${0##*/}
-
-usage() {
-        echo "usage: ${scriptname}"
-}
-
 log() {
-        local fmt=""
-        if [ "$#"  -eq 1 ]; then
-                fmt="%s"
-        elif [ "$#"  -gt 1 ]; then
-                fmt="$1"
-                shift 1
-        fi
-        printf "%s ${fmt}\n" "|>" "$@"
+	local fmt=""
+	if [ "$#"  -eq 1 ]; then
+		fmt="%s"
+	elif [ "$#"  -gt 1 ]; then
+		fmt="$1"
+		shift 1
+	fi
+	printf "%s ${fmt}\n" "|>" "$@"
 }
 
 # Log stdout and stderr.
@@ -49,48 +74,50 @@ exec > >(tee -a "$logfile")
 exec 2> >(tee -a "$logfile" >&2)
 log "$(date "+%Y-%m-%d-%H:%M:%S") Appending stdout & stdin to: ${logfile}"
 
+log "Building gcc cross-compiler toochain for $TARGET on host $HOST"
+
 setup_and_enter_dir() {
-        local dir="$1"
-        if [ -d "$dir" ]; then
-                printf "%s exists, delete it? [Y/n]: " "$dir"
-                read delete
-                if ([ -z "$delete" ] || [[ "$delete" = [yY] ]]); then
-                        rm -rf "$dir"
-                        mkdir "$dir"
-                fi
-        else
-                mkdir "$dir"
-        fi
-        cd "$dir"
+	local dir="$1"
+	if [ -d "$dir" ]; then
+		printf "%s exists, delete it? [Y/n]: " "$dir"
+		read delete
+		if ([ -z "$delete" ] || [[ "$delete" = [yY] ]]); then
+			rm -rf "$dir"
+			mkdir "$dir"
+		fi
+	else
+		mkdir "$dir"
+	fi
+	cd "$dir"
 }
 
 clean() {
-        mkdir -p $WORK
-        mkdir -p $SRC
-        rm -rf $OBJ
-        rm -rf $TOOLS
-        rm -rf $SYSROOT
-        mkdir $OBJ
-        mkdir $TOOLS
-        mkdir $SYSROOT
-        mkdir -p $SYSROOT/usr/include
+	mkdir -p $WORK
+	mkdir -p $SRC
+	rm -rf $OBJ
+	rm -rf $TOOLS
+	rm -rf $SYSROOT
+	mkdir -p $OBJ
+	mkdir -p $TOOLS
+	mkdir -p $SYSROOT
+	mkdir -p $SYSROOT/usr/include
 }
 
 fetch_sources() {
-        log "Setting up work directories and fetching sources"
+	log "Setting up work directories and fetching sources"
 
-        cd $SRC
+	cd $SRC
 
-        if ! [ -d binutils ] ; then
-                git clone git://sourceware.org/git/binutils-gdb.git binutils
+	if ! [ -d binutils ] ; then
+		git clone git://sourceware.org/git/binutils-gdb.git binutils
 	else
 		cd binutils
 		git pull
 		cd $SRC
 	fi
 
-        if ! [ -d gcc ] ; then
-                git clone https://github.com/gcc-mirror/gcc.git
+	if ! [ -d gcc ] ; then
+		git clone https://github.com/gcc-mirror/gcc.git
 	else
 		cd gcc
 		# drop previously linked gofrontend, it will be linked again below
@@ -104,9 +131,9 @@ fetch_sources() {
 	contrib/download_prerequisites
 	cd $SRC
 
-        if ! [ -d gofrontend ] ; then
-                #git clone https://go.googlesource.com/gofrontend
-                git clone https://github.com/tklauser/gofrontend.git
+	if ! [ -d gofrontend ] ; then
+		#git clone https://go.googlesource.com/gofrontend
+		git clone https://github.com/tklauser/gofrontend.git
 		cd gofrontend
 		git checkout nios2
 		cd $SRC
@@ -124,7 +151,7 @@ fetch_sources() {
 	done
 	cd $SRC
 
-        if ! [ -d glibc ] ; then
+	if ! [ -d glibc ] ; then
 		git clone git://sourceware.org/git/glibc.git
 	else
 		cd glibc
@@ -132,7 +159,7 @@ fetch_sources() {
 		cd $SRC
 	fi
 
-        if ! [ -d linux ] ; then
+	if ! [ -d linux ] ; then
 		git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 	else
 		cd linux
@@ -336,7 +363,7 @@ test_compile() {
 	#include <stdio.h>
 	int main(int argc, const char *argv[])
 	{
-		printf("%s\n", "Hello, Nios II world!");
+		printf("%s\n", "Hello, $TARGET world!");
 		return EXIT_SUCCESS;
 	}
 	EOF
