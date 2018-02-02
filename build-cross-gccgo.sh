@@ -211,7 +211,7 @@ build_glibc_bootstrap() {
 		--prefix=/usr \
 		--build=$BUILD \
 		--host=$TARGET \
-		--with-headers=$sysroot/usr/include \
+		--with-headers=$SYSROOT/usr/include \
 		--with-binutils=$TOOLS/$TARGET/bin \
 		--enable-add-ons \
 		--enable-kernel="${LINUXV##*-}" \
