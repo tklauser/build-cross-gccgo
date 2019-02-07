@@ -36,6 +36,10 @@ riscv64)
 	TARGET="riscv64-linux-gnu"
 	LINUX_ARCH="riscv"
 	;;
+sparc64)
+	TARGET="sparc64-linux-gnu"
+	LINUX_ARCH="$ARCH"
+	;;
 *)
 	echo "unsupported ARCH value: $ARCH"
 	usage
